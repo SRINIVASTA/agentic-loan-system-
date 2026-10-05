@@ -85,7 +85,7 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
             extracted_id_name = id_data.get("name", "").strip().lower()
             st.write(f"🧬 **[Gemini Vision Engine]** Dynamically Found Name on ID Card: `{id_data.get('name')}`")
             
-            # Phase 3: Dynamic Identity Verification Fraud Gate Check (FORCE OVERRIDE TRACE)
+            # Phase 3: Dynamic Identity Verification Fraud Gate Check
             st.write("🔄 **[Data Verifier Agent]** Cross-checking identity parameters against application letter contents...")
             time.sleep(0.8)
             
@@ -103,7 +103,7 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
                 st.error(f"❌ **FRAUD DETECTED BY VERIFIER AGENT:** Identity Mismatch.")
                 st.warning(f"🪪 **Name Extracted from ID Card Image:** `{id_data.get('name')}`")
                 st.info(f"📄 **Raw Text Found Inside Application Letter:**\n\n```text\n{raw_letter_text}\n```")
-                st.stop() # Hard stop pipeline execution safely
+                st.stop()
 
             # Phase 4: Metric Extraction via your original Collector Agent
             st.write("🔄 **[Data Collector Agent]** Isolating systemic metrics from application text...")
@@ -146,11 +146,24 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
             if "APPROVED" in decision:
                 schedule_list = planner.generate_schedule(principal=principal_override, annual_rate=interest_rate, quarters=40)
                 
+                # Generate clean chart mapping
                 chart_data = {
                     "Principal Component": [item.get("principal_paydown", 0) for item in schedule_list],
                     "Interest Component": [item.get("interest_paid", 0) for item in schedule_list]
                 }
-                
                 st.area_chart(chart_data, color=["#2e7d32", "#c62828"])
-                st.write("📋 Complete Amortization Matrix Trace:")
-                st.write(schedule_list)
+                
+                # FIX: RENDER NATIVE TABULAR GRID MATRIX INSTEAD OF RAW JSON PRINTING
+                st.write("📋 **Complete 40-Quarter Amortization Schedule:**")
+                st.dataframe(
+                    schedule_list, 
+                    use_container_width=True, 
+                    height=400,
+                    column_config={
+                        "quarter": st.column_config.NumberColumn("Quarter", format="%d"),
+                        "eqi": st.column_config.NumberColumn("Fixed Payment (EQI)", format="₹%.2f"),
+                        "principal_paydown": st.column_config.NumberColumn("Principal Paid", format="₹%.2f"),
+                        "interest_paid": st.column_config.NumberColumn("Interest Component", format="₹%.2f"),
+                        "remaining_balance": st.column_config.NumberColumn("Outstanding Balance", format="₹%.2f"),
+                    }
+                )
