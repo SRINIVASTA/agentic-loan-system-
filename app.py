@@ -58,7 +58,7 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
         id_data = {}
         
         with st.status("🔮 Agents Coordinating & Verifying...", expanded=True) as status:
-            # Phase 2: Dynamic Multi-modal OCR Analysis via Gemini Vision (No hardcoded names!)
+            # Phase 2: Dynamic Multi-modal OCR Analysis via Gemini Vision
             st.write("🔄 **[Gemini Vision Engine]** Interrogating ID Card layout and parsing pixels into structural JSON...")
             
             vision_prompt = """
@@ -85,24 +85,24 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
             extracted_id_name = id_data.get("name", "").strip().lower()
             st.write(f"🧬 **[Gemini Vision Engine]** Dynamically Found Name on ID Card: `{id_data.get('name')}`")
             
-            # Phase 3: Dynamic Identity Verification Fraud Gate Check (TRANSPARENT DEBUG UPGRADE)
+            # Phase 3: Dynamic Identity Verification Fraud Gate Check (FORCE OVERRIDE TRACE)
             st.write("🔄 **[Data Verifier Agent]** Cross-checking identity parameters against application letter contents...")
             time.sleep(0.8)
+            
+            # Force the sidebar to update immediately with values to bypass browser memory bugs
+            st.sidebar.markdown("### 🛠️ Diagnostics (Last Run)")
+            st.sidebar.text(f"🪪 ID Name Found: {id_data.get('name')}")
+            st.sidebar.text(f"📄 Letter Match Status: {extracted_id_name in raw_letter_text.lower()}")
             
             # Checks if the DYNAMICALLY extracted name exists in the DYNAMICALLY read text file
             if not extracted_id_name or (extracted_id_name not in raw_letter_text.lower()):
                 status.update(label="❌ Security Pipeline Tripped: Mismatch Found!", state="error")
                 st.markdown("---")
-                st.error(f"❌ **FRAUD DETECTED BY VERIFIER AGENT:** Identity tokens do not match.")
                 
-                # Render the side-by-side diagnostic layout window
-                col_id, col_let = st.columns(2)
-                with col_id:
-                    st.warning(f"🪪 **Name Extracted from ID Card Image:**\n\n`{id_data.get('name')}`")
-                with col_let:
-                    st.warning(f"📄 **Raw Text Found Inside Application Letter:**\n\n```text\n{raw_letter_text}\n```")
-                    
-                st.info("💡 **How to resolve:** Make sure that the exact spelling of the name visible in the card box is typed out inside your letter text document.")
+                # Show explicit string contents directly in the main screen window
+                st.error(f"❌ **FRAUD DETECTED BY VERIFIER AGENT:** Identity Mismatch.")
+                st.warning(f"🪪 **Name Extracted from ID Card Image:** `{id_data.get('name')}`")
+                st.info(f"📄 **Raw Text Found Inside Application Letter:**\n\n```text\n{raw_letter_text}\n```")
                 st.stop() # Hard stop pipeline execution safely
 
             # Phase 4: Metric Extraction via your original Collector Agent
