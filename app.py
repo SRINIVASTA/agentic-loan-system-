@@ -85,7 +85,7 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
             extracted_id_name = id_data.get("name", "").strip().lower()
             st.write(f"🧬 **[Gemini Vision Engine]** Dynamically Found Name on ID Card: `{id_data.get('name')}`")
             
-            # Phase 3: Dynamic Identity Verification Fraud Gate Check
+            # Phase 3: Dynamic Identity Verification Fraud Gate Check (TRANSPARENT DEBUG UPGRADE)
             st.write("🔄 **[Data Verifier Agent]** Cross-checking identity parameters against application letter contents...")
             time.sleep(0.8)
             
@@ -93,8 +93,17 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
             if not extracted_id_name or (extracted_id_name not in raw_letter_text.lower()):
                 status.update(label="❌ Security Pipeline Tripped: Mismatch Found!", state="error")
                 st.markdown("---")
-                st.error(f"❌ **FRAUD DETECTED BY VERIFIER AGENT:** The dynamic name extracted from the ID Card (`{id_data.get('name')}`) does not match or appear within the uploaded Application Letter text file. Processing aborted.")
-                st.stop()
+                st.error(f"❌ **FRAUD DETECTED BY VERIFIER AGENT:** Identity tokens do not match.")
+                
+                # Render the side-by-side diagnostic layout window
+                col_id, col_let = st.columns(2)
+                with col_id:
+                    st.warning(f"🪪 **Name Extracted from ID Card Image:**\n\n`{id_data.get('name')}`")
+                with col_let:
+                    st.warning(f"📄 **Raw Text Found Inside Application Letter:**\n\n```text\n{raw_letter_text}\n```")
+                    
+                st.info("💡 **How to resolve:** Make sure that the exact spelling of the name visible in the card box is typed out inside your letter text document.")
+                st.stop() # Hard stop pipeline execution safely
 
             # Phase 4: Metric Extraction via your original Collector Agent
             st.write("🔄 **[Data Collector Agent]** Isolating systemic metrics from application text...")
