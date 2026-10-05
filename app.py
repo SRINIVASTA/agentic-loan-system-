@@ -1,11 +1,10 @@
 import streamlit as st
 import time
 import json
-import pandas as pd
 from google import genai
 from google.genai import types
 
-# 1. CORE LINKAGE TO YOUR EXACT GITHUB TREE
+# 1. CORE LINKAGE TO YOUR EXACT FILES
 from src.agents.loan_agents import DataCollectorAgent, LoanProcessingOfficerAgent, DisbursementPlannerAgent
 from src.mcp.server import MCPSecureGateway
 from src.memory.qdrant_client import MemoryEngine
@@ -44,7 +43,7 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
         memory_engine = MemoryEngine()
         mcp_gateway = MCPSecureGateway()
         collector = DataCollectorAgent()
-        officer = LoanProcessingOfficerAgent(memory_engine=memory_engine) # Matches your exact signature!
+        officer = LoanProcessingOfficerAgent(memory_engine=memory_engine)
         planner = DisbursementPlannerAgent()
 
         # Phase 1: Parse the uploaded letter text file contents
@@ -126,16 +125,14 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
             if "APPROVED" in decision:
                 # Call your original schedule calculator from src/agents/loan_agents.py
                 schedule_list = planner.generate_schedule(principal=principal_override, annual_rate=interest_rate, quarters=40)
-                df_schedule = pd.DataFrame(schedule_list)
                 
-                # Render the interactive graphical map using Pandas fields
-                if not df_schedule.empty and "principal_paydown" in df_schedule.columns:
-                    chart_data = df_schedule.copy()
-                    chart_data = chart_data.rename(columns={
-                        "principal_paydown": "Principal Component", 
-                        "interest_paid": "Interest Component",
-                        "quarter": "Quarter"
-                    })
-                    st.area_chart(chart_data.set_index("Quarter")[["Principal Component", "Interest Component"]], color=["#2e7d32", "#c62828"])
+                # Build chart data natively without importing third-party libraries
+                chart_data = {
+                    "Principal Component": [item.get("principal_paydown", 0) for item in schedule_list],
+                    "Interest Component": [item.get("interest_paid", 0) for item in schedule_list]
+                }
                 
-                st.dataframe(df_schedule, use_container_width=True, height=200)
+                # Render native interactive chart
+                st.area_chart(chart_data, color=["#2e7d32", "#c62828"])
+                st.write("📋 Complete Amortization Matrix Trace:")
+                st.write(schedule_list)
