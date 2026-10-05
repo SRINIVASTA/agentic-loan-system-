@@ -90,6 +90,14 @@ st.caption("Forward Deployment Engineering (FDE) Reference Architecture — Proc
 
 # Sidebar Configuration Layout
 st.sidebar.header("📥 Application Documents Ingestion")
+
+# NEW: Password input field for the Gemini API Key
+api_key = st.sidebar.text_input(
+    "🔑 Enter your GEMINI_API_KEY", 
+    type="password", 
+    help="Get a free key from Google AI Studio. It is safely used locally in this session and never saved."
+)
+
 uploaded_letter = st.sidebar.file_uploader("Upload Application Letter (Text/PDF)", type=["txt"])
 uploaded_id = st.sidebar.file_uploader("Upload Applicant ID Card Image", type=["jpg", "jpeg", "png"])
 
@@ -98,10 +106,8 @@ st.sidebar.subheader("System Override Parameters")
 principal_override = st.sidebar.number_input("Requested Principal Loan Amount (INR)", min_value=100000, max_value=50000000, value=1000000, step=50000)
 interest_rate = st.sidebar.slider("Annual Interest Rate (%)", min_value=4.0, max_value=24.0, value=8.5, step=0.1)
 
-# Check for API key in Streamlit Secrets, otherwise fallback gracefully
-api_key = st.secrets.get("GEMINI_API_KEY", None)
 if not api_key:
-    st.sidebar.warning("⚠️ Running in Simulation Mode. To execute live OCR extraction, add your `GEMINI_API_KEY` to Streamlit Secrets.")
+    st.sidebar.warning("⚠️ Running in Simulation Mode. To execute live OCR extraction, paste your API key in the password field above.")
 
 # Trigger Pipeline Execution
 if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
@@ -110,7 +116,7 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
     else:
         st.info("🚀 Triggering Event-Driven Agent DAG...")
         
-        # Initialize Google GenAI client if key is present
+        # Initialize Google GenAI client if the user provided the password key
         if api_key:
             client = genai.Client(api_key=api_key)
         else:
@@ -172,7 +178,6 @@ if st.sidebar.button("⚡ Run Agentic Pipeline", use_container_width=True):
             # Step 4: Extraction & Metric Parsing
             st.write("🔄 **[Data Collector Agent]** Isolating systemic metrics from application text...")
             metrics = collector.extract_metrics(client, raw_letter_text)
-            # Ensure the dashboard uses the slider values if manual adjustments are made
             metrics["requested_amount"] = principal_override 
 
             # Step 5: Secure Third Party Bureau Pipeline via MCP
